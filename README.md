@@ -1,6 +1,8 @@
 
 # ServiceFabric Hackathon
 
+![Architecture](./imgs/logo.png) 
+
 ## Team 
 
 - Clemens Schotte
@@ -10,4 +12,7 @@
 
 ## Architecture
 
-![Architecture](./architecture.png) 
+![Architecture](./imgs/architecture.png) 
+
+## Scenario
+
