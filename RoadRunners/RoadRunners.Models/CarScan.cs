@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace RoadRunners.Models
 {
+    [Serializable]
     public class CarScan
     {
         private string _licensePlate;
@@ -30,7 +31,7 @@ namespace RoadRunners.Models
             set { _scannerId = value; }
         }
 
-        public string _action;
+        private string _action;
 
         /// <summary>
         /// Can be Start of End
