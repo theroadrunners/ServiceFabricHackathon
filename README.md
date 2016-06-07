@@ -10,5 +10,4 @@
 
 ## Architecture
 
-<img src="./architecture.png"></img>
-
+![Architecture](./architecture.png) 
