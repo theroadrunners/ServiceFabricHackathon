@@ -32,7 +32,7 @@ New-AzureRmResourceGroup `
 
 $deploymentResult = New-AzureRmResourceGroupDeployment `
 	-ResourceGroupName $resourceGroupName `
-	-TemplateUri "$($repositoryUrl)/ARM/azuredeploy.json" `
+	-TemplateUri "$($repositoryUrl)/ARM/ARM/azuredeploy.json" `
 	-TemplateParameterObject $commonSettings `
 	-Mode Complete  `
 	-Force `
