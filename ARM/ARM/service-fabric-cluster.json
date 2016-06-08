@@ -297,7 +297,6 @@
             },
             "tags": { "displayName": "Virtual Machine ScaleSet" },
             "properties": {
-                "overprovision": "[parameters('commonSettings').serviceFabric.overProvision]",
                 "upgradePolicy": {
                     "mode": "Automatic"
                 },
