@@ -37,7 +37,7 @@ namespace RoadRunners.CarActor
             // Any serializable object can be saved in the StateManager.
             // For more information, see http://aka.ms/servicefabricactorsstateserialization
 
-            return this.StateManager.TryAddStateAsync("state", CarStates.Unknown);
+            return this.StateManager.TryAddStateAsync("state", new CarScan { Action = CarStates.Unknown });
         }
 
         /// <summary>
@@ -58,30 +58,36 @@ namespace RoadRunners.CarActor
         /// <returns></returns>
         async Task ICarActor.SetStateAsync(CarScan carscan)
         {
-            CarScan cs;
-            var storedCarScan = await this.StateManager.TryGetStateAsync<CarScan>("state");
-            if (!storedCarScan.HasValue)
-                cs = carscan;
-            else
-                cs = storedCarScan.Value;
-
-            switch (carscan.Action)
+            try
             {
-                case CarStates.Start:
-                    break;
-                case CarStates.End:
-                    cs.EndScannerId = carscan.EndScannerId;
-                    cs.EndTime = carscan.EndTime;
-                    cs.Speed = 0.0;
-                    break;
+                CarScan cs;
+                var storedCarScan = await this.StateManager.GetStateAsync<CarScan>("state");
+                if (storedCarScan.Action == CarStates.Unknown)
+                    cs = carscan;
+                else
+                    cs = storedCarScan;
+
+                switch (carscan.Action)
+                {
+                    case CarStates.Start:
+                        break;
+                    case CarStates.End:
+                        cs.EndScannerId = carscan.EndScannerId;
+                        cs.EndTime = carscan.EndTime;
+                        cs.Speed = 0.0;
+                        break;
+
+                }
+                // Requests are not guaranteed to be processed in order nor at most once.
+                // The update function here verifies that the incoming state is greater than the current count to preserve order.
+                if (carscan.Action == CarStates.End)
+                    StoreEvent(carscan);
+                await this.StateManager.AddOrUpdateStateAsync("state", cs, (key, value) => cs.Action > value.Action ? cs : value);
+            }
+            catch(Exception ex)
+            {
 
             }
-            // Requests are not guaranteed to be processed in order nor at most once.
-            // The update function here verifies that the incoming state is greater than the current count to preserve order.
-            if (carscan.Action == CarStates.End)
-                StoreEvent(carscan);
-            await this.StateManager.AddOrUpdateStateAsync("state", cs, (key, value) => cs.Action > value.Action ? cs : value);
-
         }
 
         private void StoreEvent(CarScan carscan)
