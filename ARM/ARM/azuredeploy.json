@@ -63,7 +63,7 @@
                 "clusterName": "mycluster",
                 "clusterProtectionLevel": "EncryptAndSign",
                 "clusterSize": "[parameters('serviceFabricClusterSize')]",
-                "overProvision": "false",
+                "overProvision": false,
                 "durabilityLevel": "Bronze",
                 "reliabilityLevel": "Bronze",
                 "vault": {
