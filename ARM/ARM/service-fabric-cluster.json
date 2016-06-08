@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": { "commonSettings": { "type": "object" } },
     "variables": {
-        "nlbname": "[concat('loadbalancer-', 'regserver', '-', parameters('commonSettings').tenantName)]",
+        "nlbname": "[concat('loadbalancer-servicefabric-', parameters('commonSettings').tenantName)]",
         "nlbid": "[resourceId('Microsoft.Network/loadBalancers', variables('nlbname'))]",
         "storage": {
             "nameSuffix": "[concat(toLower(replace(parameters('commonSettings').tenantName,'-','')), 'vmss')]",
@@ -126,7 +126,7 @@
             "location": "[resourceGroup().location]",
             "name": "[concat(parameters('commonSettings').tenantName, '-servicefabric')]",
             "tags": {
-                "displayName": "Public IP RegServer",
+                "displayName": "Public IP Service Fabric",
                 "tenantName": "[parameters('commonSettings').tenantName]"
             },
             "properties": {
@@ -322,9 +322,11 @@
                         }
                     },
                     "osProfile": {
-                        "computerNamePrefix": "regserver",
+                        "computerNamePrefix": "servicefabric",
                         "adminUsername": "[parameters('commonSettings').adminUsername]",
-                        "computernamePrefix": "servicefabric"
+                        "adminPassword": "[parameters('commonSettings').adminPassword]",
+                        "windowsConfiguration": {
+                        }
                     },
                     "networkProfile": {
                         "networkInterfaceConfigurations": [
@@ -337,7 +339,7 @@
                                             "name": "myVirtualMachineScaleSetIpConfiguration",
                                             "properties": {
                                                 "subnet": { "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('commonSettings').vnet.name), '/subnets/', parameters('commonSettings').vnet.subnet.servicefabric.name)]" },
-                                                "loadBalancerBackendAddressPools": [ { "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('nlbname')), '/backendAddressPools/', concat('regserver', '-', 'backendAddressPool'))]" } ]
+                                                "loadBalancerBackendAddressPools": [ { "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('nlbname')), '/backendAddressPools/', concat('servicefabric', '-', 'backendAddressPool'))]" } ]
                                             }
                                         }
                                     ]
