@@ -439,7 +439,7 @@
                             "endPort": "3000"
                         },
                         "isPrimary": true,
-                        "vmInstanceCount": 5
+                        "vmInstanceCount": "[parameters('commonSettings').serviceFabric.clusterSize]"
                     }
                 ],
                 "provisioningState": "Default",

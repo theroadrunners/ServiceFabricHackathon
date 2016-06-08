@@ -1,7 +1,5 @@
-$tenantName = "roadrunner1"
+$tenantName = "roadrunner2"
 $location="West Europe"
-
-# concat(parameters('tenantName'), variables('publicIPs').webportal)
 
 $githubUser = "theroadrunners"
 $githubProject = "ServiceFabricHackathon"
