@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoadRunners.TestClient", "R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAPI", "TestAPI\TestAPI.csproj", "{F2690F54-2F13-4198-99AD-E90FEDF94103}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTSample", "RESTSample\RESTSample.csproj", "{2F42C0B0-BC7E-4F62-89FC-022E2DA542AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,14 @@ Global
 		{F2690F54-2F13-4198-99AD-E90FEDF94103}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F2690F54-2F13-4198-99AD-E90FEDF94103}.Release|x64.ActiveCfg = Release|Any CPU
 		{F2690F54-2F13-4198-99AD-E90FEDF94103}.Release|x64.Build.0 = Release|Any CPU
+		{2F42C0B0-BC7E-4F62-89FC-022E2DA542AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F42C0B0-BC7E-4F62-89FC-022E2DA542AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F42C0B0-BC7E-4F62-89FC-022E2DA542AB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2F42C0B0-BC7E-4F62-89FC-022E2DA542AB}.Debug|x64.Build.0 = Debug|Any CPU
+		{2F42C0B0-BC7E-4F62-89FC-022E2DA542AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F42C0B0-BC7E-4F62-89FC-022E2DA542AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F42C0B0-BC7E-4F62-89FC-022E2DA542AB}.Release|x64.ActiveCfg = Release|Any CPU
+		{2F42C0B0-BC7E-4F62-89FC-022E2DA542AB}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
