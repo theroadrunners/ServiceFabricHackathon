@@ -21,7 +21,8 @@ namespace RoadRunners.ScannerWebApi.Controllers
             CarScan cs = new CarScan()
             {
                 Action = CarStates.Start,
-                ScannerId = "A",
+                StartScannerId = "A",
+                StartTime = DateTime.Now,
                 LicensePlate = "1-ABC-AA"
             };
             return new CarScan[] { cs };

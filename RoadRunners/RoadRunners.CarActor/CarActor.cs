@@ -49,18 +49,38 @@ namespace RoadRunners.CarActor
             return this.StateManager.GetStateAsync<CarStates>("state");
         }
 
+
+
         /// <summary>
         /// TODO: Replace with your own actor method.
         /// </summary>
         /// <param name="count"></param>
         /// <returns></returns>
-        Task ICarActor.SetStateAsync(CarScan carscan)
+        async Task ICarActor.SetStateAsync(CarScan carscan)
         {
+            CarScan cs;
+            var storedCarScan = await this.StateManager.TryGetStateAsync<CarScan>("state");
+            if (!storedCarScan.HasValue)
+                cs = carscan;
+            else
+                cs = storedCarScan.Value;
+
+            switch (carscan.Action)
+            {
+                case CarStates.Start:
+                    break;
+                case CarStates.End:
+                    cs.EndScannerId = carscan.EndScannerId;
+                    cs.EndTime = carscan.EndTime;
+                    cs.Speed = 0.0;
+                    break;
+
+            }
             // Requests are not guaranteed to be processed in order nor at most once.
             // The update function here verifies that the incoming state is greater than the current count to preserve order.
-            if(carscan.Action == CarStates.End)
+            if (carscan.Action == CarStates.End)
                 StoreEvent(carscan);
-            return this.StateManager.AddOrUpdateStateAsync("state", carscan, (key, value) => carscan.Action > value.Action ? carscan : value);
+            await this.StateManager.AddOrUpdateStateAsync("state", cs, (key, value) => cs.Action > value.Action ? cs : value);
 
         }
 

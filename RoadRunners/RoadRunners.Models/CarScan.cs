@@ -84,7 +84,5 @@ namespace RoadRunners.Models
             set { _action = value; }
         }
 
-
-
     }
 }
