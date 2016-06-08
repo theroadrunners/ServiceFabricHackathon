@@ -58,7 +58,7 @@
             "repositoryUrl": "[parameters('repositoryUrl')]",
             "adminUsername": "[parameters('adminUsername')]",
             "adminPassword": "[parameters('adminPassword')]",
-            "restultStorage": "[concat(parameters('tenantName'), 'results')]",
+            "resultStorage": "[concat(parameters('tenantName'), 'results')]",
             "serviceFabric": {
                 "loggingStorageName": "[concat('logging', parameters('tenantName'))]",
                 "clusterName": "mycluster",
