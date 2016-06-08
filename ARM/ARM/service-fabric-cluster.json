@@ -55,9 +55,23 @@
                         }
                     },
                     {
-                        "name": "fabricTcpGatewayPort-in",
+                        "name": "servicefabric-https-in",
                         "properties": {
                             "priority": 102,
+                            "description": "Allow TCP/3389 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.servicefabric.address]",
+                            "destinationPortRange": "3389"
+                        }
+                    },
+                    {
+                        "name": "fabricTcpGatewayPort-in",
+                        "properties": {
+                            "priority": 103,
                             "description": "Allow TCP/19000 Inbound",
                             "access": "Allow",
                             "direction": "Inbound",
@@ -71,7 +85,7 @@
                     {
                         "name": "fabricHttpGatewayPort-in",
                         "properties": {
-                            "priority": 103,
+                            "priority": 104,
                             "description": "Allow TCP/19080 Inbound",
                             "access": "Allow",
                             "direction": "Inbound",
@@ -260,6 +274,20 @@
                             "probe": { "id": "[concat(variables('nlbid'), '/probes/', 'probe-19080')]" },
                             "frontendIPConfiguration": { "id": "[concat(variables('nlbid'), '/frontendIPConfigurations/', 'myLoadBalancerFrontEnd')]" },
                             "backendAddressPool": { "id": "[concat(variables('nlbid'), '/backendAddressPools/', concat('servicefabric', '-', 'backendAddressPool'))]" }
+                        }
+                    }
+                ],
+                "inboundNatPools": [
+                    {
+                        "name": "LoadBalancerBEAddressNatPool",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('commonSettings').tenantName, '-servicefabric'))]"
+                            },
+                            "protocol": "Tcp",
+                            "frontendPortRangeEnd": 4500,
+                            "frontendPortRangeStart": 3389,
+                            "backendPort": 3389
                         }
                     }
                 ]
