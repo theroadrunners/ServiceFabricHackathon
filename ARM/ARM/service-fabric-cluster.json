@@ -325,20 +325,7 @@
                     "osProfile": {
                         "computerNamePrefix": "regserver",
                         "adminUsername": "[parameters('commonSettings').adminUsername]",
-                        "computernamePrefix": "servicefabric",
-                        "secrets": [
-                            {
-                                "sourceVault": {
-                                    "id": "[parameters('commonSettings').serviceFabric.vault.sourceVault]"
-                                },
-                                "vaultCertificates": [
-                                    {
-                                        "certificateStore": "My",
-                                        "certificateUrl": "[parameters('commonSettings').serviceFabric.vault.certUrl]"
-                                    }
-                                ]
-                            }
-                        ]
+                        "computernamePrefix": "servicefabric"
                     },
                     "networkProfile": {
                         "networkInterfaceConfigurations": [
@@ -358,93 +345,8 @@
                                 }
                             }
                         ]
-                    },
-                    "extensionProfile": {
-                        "extensions": [
-                            {
-                                "name": "servicefabric-extension",
-                                "properties": {
-                                    "type": "ServiceFabricNode",
-                                    "autoUpgradeMinorVersion": false,
-                                    "protectedSettings": {
-                                        "StorageAccountKey1": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('commonSettings').serviceFabric.loggingStorageName), parameters('commonSettings').constants.apiVersions.storageAccounts).key1]",
-                                        "StorageAccountKey2": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('commonSettings').serviceFabric.loggingStorageName), parameters('commonSettings').constants.apiVersions.storageAccounts).key2]"
-                                    },
-                                    "publisher": "Microsoft.Azure.ServiceFabric",
-                                    "settings": {
-                                        "clusterEndpoint": "[reference(parameters('commonSettings').serviceFabric.clusterName).clusterEndpoint]",
-                                        "nodeTypeRef": "[concat('vmss-', parameters('commonSettings').tenantName, '-', 'servicefabric')]",
-                                        "dataPath": "D:\\\\SvcFab",
-                                        "durabilityLevel": "[parameters('commonSettings').serviceFabric.durabilityLevel]",
-                                        "certificate": {
-                                            "thumbprint": "[parameters('commonSettings').serviceFabric.vault.cert.thumbprint]",
-                                            "x509StoreName": "[parameters('commonSettings').serviceFabric.vault.cert.x509StoreName]"
-                                        }
-                                    },
-                                    "typeHandlerVersion": "1.0"
-                                }
-                            }
-                        ]
                     }
                 }
-            }
-        },
-        {
-            "apiVersion": "2016-03-01",
-            "type": "Microsoft.ServiceFabric/clusters",
-            "name": "[parameters('commonSettings').serviceFabric.clusterName]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[concat('Microsoft.Storage/storageAccounts/', parameters('commonSettings').serviceFabric.loggingStorageName)]"
-            ],
-            "properties": {
-                "certificate": {
-                    "thumbprint": "[parameters('commonSettings').serviceFabric.vault.cert.thumbprint]",
-                    "x509StoreName": "[parameters('commonSettings').serviceFabric.vault.cert.x509StoreName]"
-                },
-                "clientCertificateCommonNames": [ ],
-                "clientCertificateThumbprints": [ ],
-                "clusterState": "Default",
-                "diagnosticsStorageAccountConfig": {
-                    "protectedAccountKeyName": "StorageAccountKey1",
-                    "storageAccountName": "[parameters('commonSettings').serviceFabric.loggingStorageName]",
-                    "blobEndpoint": "[concat('https://', parameters('commonSettings').serviceFabric.loggingStorageName, parameters('commonSettings').environment.blobEndpoint, '/')]",
-                    "queueEndpoint": "[concat('https://', parameters('commonSettings').serviceFabric.loggingStorageName, parameters('commonSettings').environment.queueEndpoint, '/')]",
-                    "tableEndpoint": "[concat('https://', parameters('commonSettings').serviceFabric.loggingStorageName, parameters('commonSettings').environment.tableEndpoint, '/')]"
-                },
-                "fabricSettings": [
-                    {
-                        "name": "Security",
-                        "parameters": [
-                            {
-                                "name": "ClusterProtectionLevel",
-                                "value": "[parameters('commonSettings').serviceFabric.clusterProtectionLevel]"
-                            }
-                        ]
-                    }
-                ],
-                "managementEndpoint": "[concat('https://', reference(concat(parameters('commonSettings').tenantName, '-servicefabric')).dnsSettings.fqdn,':19080')]",
-                "nodeTypes": [
-                    {
-                        "name": "[concat('vmss-', parameters('commonSettings').tenantName, '-', 'servicefabric')]",
-                        "applicationPorts": {
-                            "startPort": "1000",
-                            "endPort": "80"
-                        },
-                        "clientConnectionEndpointPort": "19000",
-                        "httpGatewayEndpointPort": "19080",
-                        "durabilityLevel": "[parameters('commonSettings').serviceFabric.durabilityLevel]",
-                        "ephemeralPorts": {
-                            "startPort": "2000",
-                            "endPort": "3000"
-                        },
-                        "isPrimary": true,
-                        "vmInstanceCount": "[parameters('commonSettings').serviceFabric.clusterSize]"
-                    }
-                ],
-                "provisioningState": "Default",
-                "reliabilityLevel": "[parameters('commonSettings').serviceFabric.reliabilityLevel]",
-                "vmImage": "Windows"
             }
         }
     ]
