@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.ServiceFabric.Actors;
-using RoadRunners.Models;
-
-namespace RoadRunners.CarActor.Interfaces
+﻿namespace RoadRunners.CarActor.Interfaces
 {
+    using Microsoft.ServiceFabric.Actors;
+    using System.Threading.Tasks;
+    using Models;
+
     /// <summary>
     /// This interface defines the methods exposed by an actor.
     /// Clients use this interface to interact with the actor that implements it.
