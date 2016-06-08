@@ -1,16 +1,14 @@
-﻿using Microsoft.Owin.Hosting;
-using Newtonsoft.Json;
-using Owin;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Http;
-
-namespace RESTSample
+﻿namespace RESTSample
 {
+    using Microsoft.Owin.Hosting;
+    using Newtonsoft.Json;
+    using Owin;
+    using System;
+    using System.Net.Http;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Web.Http;
+
     class Program
     {
         static void Main(string[] args)
