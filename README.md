@@ -10,9 +10,9 @@
 - Sander van den Hoven
 - Christian Geuer-Pollmann
 
-## Architecture
+## Architecture v1
 
-![Architecture](./imgs/architecture.png) 
+![Architecture](./imgs/architecture1.png) 
 
 ## Scenario
 
@@ -24,3 +24,7 @@ Traffic speed in the Netherlands is measured by two cameras with license plate d
 - For each `entering` event, a stateful actor is created. 
 - When the `leaving` event occurs, the stateful actor computes the average speed, and sends a message to a stateless DB-writer-actor.
 - The DB-writer-actor batches DB writes for efficiency, to avoid all stateful actors making their own database connections. 
+
+## Architecture v2
+
+![Architecture](./imgs/architecture2.png) 
