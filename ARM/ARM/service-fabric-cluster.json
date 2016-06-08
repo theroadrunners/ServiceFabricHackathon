@@ -365,11 +365,7 @@
                                         "clusterEndpoint": "[reference(parameters('commonSettings').serviceFabric.clusterName).clusterEndpoint]",
                                         "nodeTypeRef": "[concat('vmss-', parameters('commonSettings').tenantName, '-', 'servicefabric')]",
                                         "dataPath": "D:\\\\SvcFab",
-                                        "durabilityLevel": "[parameters('commonSettings').serviceFabric.durabilityLevel]",
-                                        "certificate": {
-                                            "thumbprint": "[parameters('commonSettings').serviceFabric.vault.cert.thumbprint]",
-                                            "x509StoreName": "[parameters('commonSettings').serviceFabric.vault.cert.x509StoreName]"
-                                        }
+                                        "durabilityLevel": "[parameters('commonSettings').serviceFabric.durabilityLevel]"
                                     },
                                     "typeHandlerVersion": "1.0"
                                 }
@@ -403,15 +399,7 @@
                     "tableEndpoint": "[concat('https://', parameters('commonSettings').serviceFabric.loggingStorageName, parameters('commonSettings').environment.tableEndpoint, '/')]"
                 },
                 "fabricSettings": [
-                    {
-                        "name": "Security",
-                        "parameters": [
-                            {
-                                "name": "ClusterProtectionLevel",
-                                "value": "[parameters('commonSettings').serviceFabric.clusterProtectionLevel]"
-                            }
-                        ]
-                    }
+
                 ],
                 "managementEndpoint": "[concat('https://', reference(concat(parameters('commonSettings').tenantName, '-servicefabric')).dnsSettings.fqdn,':19080')]",
                 "nodeTypes": [
