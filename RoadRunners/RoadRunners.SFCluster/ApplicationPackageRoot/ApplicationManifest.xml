@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="RoadRunners.SFClusterType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+   <Parameters>
+      <Parameter Name="ScannerWebApi_InstanceCount" DefaultValue="-1" />
+      <Parameter Name="CarActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="CarActorService_MinReplicaSetSize" DefaultValue="2" />
+      <Parameter Name="CarActorService_TargetReplicaSetSize" DefaultValue="3" />
+   </Parameters>
+   <ServiceManifestImport>
+      <ServiceManifestRef ServiceManifestName="RoadRunners.ScannerWebApiPkg" ServiceManifestVersion="1.0.0" />
+      <ConfigOverrides />
+   </ServiceManifestImport>
+   <ServiceManifestImport>
+      <ServiceManifestRef ServiceManifestName="RoadRunners.CarActorPkg" ServiceManifestVersion="1.0.0" />
+   </ServiceManifestImport>
+   <DefaultServices>
+      <Service Name="ScannerWebApi">
+         <StatelessService ServiceTypeName="ScannerWebApiType" InstanceCount="[ScannerWebApi_InstanceCount]">
+            <SingletonPartition />
+         </StatelessService>
+      </Service>
+      <Service Name="CarActorService" GeneratedIdRef="73ad243d-f736-40d7-9ab1-e2b33c462725|Persisted">
+         <StatefulService ServiceTypeName="CarActorServiceType" TargetReplicaSetSize="[CarActorService_TargetReplicaSetSize]" MinReplicaSetSize="[CarActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[CarActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+   </DefaultServices>
+</ApplicationManifest>
