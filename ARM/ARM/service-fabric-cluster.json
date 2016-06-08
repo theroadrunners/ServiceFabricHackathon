@@ -426,10 +426,10 @@
                 "managementEndpoint": "[concat('https://', reference(concat(parameters('commonSettings').tenantName, '-servicefabric')).dnsSettings.fqdn,':19080')]",
                 "nodeTypes": [
                     {
-                        "name": "[variables('vmNodeType0Name')]",
+                        "name": "[concat('vmss-', parameters('commonSettings').tenantName, '-', 'servicefabric')]",
                         "applicationPorts": {
-                            "endPort": "80",
-                            "startPort": "1000"
+                            "startPort": "1000",
+                            "endPort": "80"
                         },
                         "clientConnectionEndpointPort": "19000",
                         "httpGatewayEndpointPort": "19080",
