@@ -22,7 +22,7 @@
         }
     },
     "variables": {
-        "azureEnvironment": ".core.windows.net",
+        "azureEnvironment": "core.windows.net",
         "apiVersions": {
             "storageAccounts": "2015-06-15",
             "networkSecurityGroups": "2015-06-15",
@@ -50,9 +50,9 @@
                 }
             },
             "environment": {
-                "blobEndpoint": "[concat('blob', variables('azureEnvironment'))]",
-                "queueEndpoint": "[concat('queue', variables('azureEnvironment'))]",
-                "tableEndpoint": "[concat('table', variables('azureEnvironment'))]"
+                "blobEndpoint": "[concat('.blob.', variables('azureEnvironment'))]",
+                "queueEndpoint": "[concat('.queue.', variables('azureEnvironment'))]",
+                "tableEndpoint": "[concat('.table.', variables('azureEnvironment'))]"
             },
             "tenantName": "[parameters('tenantName')]",
             "repositoryUrl": "[parameters('repositoryUrl')]",
