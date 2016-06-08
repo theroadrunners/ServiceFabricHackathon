@@ -28,21 +28,11 @@
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>
-    <Content Include="database.json" />
-    <Content Include="hostserver.json" />
-    <Content Include="portalserver-disabled.json" />
-    <Content Include="portalserver-enabled.json" />
-    <Content Include="regserver-disabled.json" />
-    <Content Include="jumphost.json" />
-    <Content Include="shared-resources.json" />
-    <Content Include="regserver-enabled.json" />
+    <Content Include="service-fabric-cluster.json" />
     <Content Include="azuredeploy.json" />
-    <None Include="longterm.json" />
+    <None Include="json.json" />
     <None Include="metadata.json" />
-    <None Include="scripts\install-db.sh" />
-    <None Include="scripts\install-hostserver.sh" />
-    <None Include="scripts\install-regserver.sh" />
-    <None Include="scripts\install-webportal.sh" />
+    <None Include="servicefabricfromquickstart.json" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>

@@ -22,6 +22,7 @@
         }
     },
     "variables": {
+        "azureEnvironment": ".core.windows.net",
         "apiVersions": {
             "storageAccounts": "2015-06-15",
             "networkSecurityGroups": "2015-06-15",
@@ -49,12 +50,31 @@
                 }
             },
             "environment": {
-                "blobEndpoint": "blob.core.windows.net"
+                "blobEndpoint": "[concat('blob', variables('azureEnvironment'))]",
+                "queueEndpoint": "[concat('queue', variables('azureEnvironment'))]",
+                "tableEndpoint": "[concat('table', variables('azureEnvironment'))]"
             },
             "tenantName": "[parameters('tenantName')]",
             "repositoryUrl": "[parameters('repositoryUrl')]",
             "adminUsername": "[parameters('adminUsername')]",
             "adminPassword": "[parameters('adminPassword')]",
+            "serviceFabric": {
+                "loggingStorageName": "[concat('logging', parameters('tenantName'))]",
+                "clusterName": "mycluster",
+                "clusterProtectionLevel": "EncryptAndSign",
+                "clusterSize": "[parameters('serviceFabricClusterSize')]",
+                "overProvision": "false",
+                "durabilityLevel": "Bronze",
+                "reliabilityLevel": "Bronze",
+                "vault": {
+                    "sourceVault": "",
+                    "certUrl": "",
+                    "cert": {
+                        "thumbprint": "",
+                        "x509StoreName": "My"
+                    }
+                }
+            },
             "vnet": {
                 "name": "[concat(parameters('tenantName'),'-vnet')]",
                 "address": "10.0.0.0/16",
@@ -70,32 +90,28 @@
             "vm": {
                 "vmStorageAccountContainerName": "vhds",
                 "images": {
-                    "standard": {
-                        "publisher": "OpenLogic",
-                        "offer": "CentOS",
-                        "sku": "7.2",
+                    "servicefabric": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2012-R2-Datacenter",
                         "version": "latest"
                     }
                 },
                 "size": {
-                    "regserver": "Standard_A1",
-                    "database": "Standard_A1",
-                    "hostserver": "Standard_A1",
-                    "webportal": "Standard_A1",
-                    "jumphost": "Standard_A0"
+                    "servicefabric": "Standard_A1"
                 }
             }
         }
     },
     "resources": [
         {
-            "name": "shared-resources",
+            "name": "service-fabric-cluster",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "[variables('commonSettings').constants.apiVersions.deployments]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(variables('commonSettings').repositoryUrl, '/ARM/ARM/shared-resources.json')]",
+                    "uri": "[concat(variables('commonSettings').repositoryUrl, '/ARM/ARM/service-fabric-cluster.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
