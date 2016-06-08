@@ -307,11 +307,11 @@
                             "caching": "ReadWrite",
                             "createOption": "FromImage",
                             "vhdContainers": [
-                                "[concat('https://', variables('storage').prefixes[0], variables('storage').nameSuffix, '.', parameters('commonSettings').environment.blobEndpoint, '/vmss')]",
-                                "[concat('https://', variables('storage').prefixes[1], variables('storage').nameSuffix, '.', parameters('commonSettings').environment.blobEndpoint, '/vmss')]",
-                                "[concat('https://', variables('storage').prefixes[2], variables('storage').nameSuffix, '.', parameters('commonSettings').environment.blobEndpoint, '/vmss')]",
-                                "[concat('https://', variables('storage').prefixes[3], variables('storage').nameSuffix, '.', parameters('commonSettings').environment.blobEndpoint, '/vmss')]",
-                                "[concat('https://', variables('storage').prefixes[4], variables('storage').nameSuffix, '.', parameters('commonSettings').environment.blobEndpoint, '/vmss')]"
+                                "[concat('https://', variables('storage').prefixes[0], variables('storage').nameSuffix, parameters('commonSettings').environment.blobEndpoint, '/vmss')]",
+                                "[concat('https://', variables('storage').prefixes[1], variables('storage').nameSuffix, parameters('commonSettings').environment.blobEndpoint, '/vmss')]",
+                                "[concat('https://', variables('storage').prefixes[2], variables('storage').nameSuffix, parameters('commonSettings').environment.blobEndpoint, '/vmss')]",
+                                "[concat('https://', variables('storage').prefixes[3], variables('storage').nameSuffix, parameters('commonSettings').environment.blobEndpoint, '/vmss')]",
+                                "[concat('https://', variables('storage').prefixes[4], variables('storage').nameSuffix, parameters('commonSettings').environment.blobEndpoint, '/vmss')]"
                             ]
                         },
                         "imageReference": {
