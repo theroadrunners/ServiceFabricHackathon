@@ -1,37 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Http;
-using RoadRunners.Models;
-using Newtonsoft.Json;
-using System.Net.Http.Headers;
-
-namespace RoadRunners.TestClient
+﻿namespace RoadRunners.TestClient
 {
+    using System;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Linq;
+    using Newtonsoft.Json;
+    using Models;
+
     class Program
     {
         static void Main(string[] args)
         {
-            DoAction(CarStates.Start,"A");
-            Console.ReadLine();
-            DoAction(CarStates.End, "B");
+            var tasks = Enumerable.Range(start: 1, count: 10000)
+                .Select(i => new CarSimulator(SenderClient.SendAsync))
+                .Select(cs => cs.RunAsync())
+                .ToArray();
 
+            Task.WaitAll(tasks);
+        }
+    }
+
+    public class CarSimulator
+    {
+        static Random _r = new Random();
+
+        static string GetRandomLicensePlate()
+        {
+            var a = _r.Next(minValue: 1, maxValue: 99);
+            var c = _r.Next(minValue: 1, maxValue: 99);
+
+            return $"{a.ToString("00")}-FF-{c.ToString("00")}";
         }
 
-        private static void DoAction(CarStates state, string scanner)
+        static TimeSpan GetSmallDelay(int seconds)
         {
-            CarScan cs = new CarScan()
-            {
-                Action = state,
-                StartScannerId = scanner,
-                LicensePlate = "1-ABC-AA"
-            };
+            return TimeSpan.FromSeconds(_r.Next(seconds));
+        }
 
-            using (var client = new HttpClient())
+        public string LicensePlate { get; } = GetRandomLicensePlate();
+        public TimeSpan InitialDelay { get; } = GetSmallDelay(10);
+        public TimeSpan WithinSectionDelay { get; } = GetSmallDelay(10);
+
+        private Func<CarScan, Task> SendEvent;
+
+        public CarSimulator(Func<CarScan, Task> sendEvent)
+        {
+            this.SendEvent = sendEvent;
+        }
+
+        public async Task RunAsync()
+        {
+            await Task.Delay(this.InitialDelay);
+            await SendEvent(new CarScan()
             {
-                client.BaseAddress = new Uri("http://localhost:8664/");
+                Action = CarStates.Start,
+                StartScannerId = "A",
+                LicensePlate = this.LicensePlate
+            });
+
+            await Task.Delay(this.WithinSectionDelay);
+            await SendEvent(new CarScan()
+            {
+                Action = CarStates.End,
+                StartScannerId = "B",
+                LicensePlate = this.LicensePlate
+            });
+        }
+    }
+
+    class SenderClient
+    {
+        public async static Task SendAsync(CarScan cs)
+        {
+            using (var client = new HttpClient {
+                BaseAddress = new Uri("http://localhost:8664/")
+            })
+            {
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
 
@@ -41,17 +87,10 @@ namespace RoadRunners.TestClient
                         encoding: Encoding.UTF8,
                         mediaType: "application/json");
 
-                client.PostAsync("/api/Scanner", content)
-                    .ContinueWith(task =>
-                    {
+                var result = await client.PostAsync("/api/Scanner", content);
+                var response = await result.Content.ReadAsStringAsync();
 
-                        var response = task.Result;
-                        Console.WriteLine(response.Content.ReadAsStringAsync().Result);
-                    });
-
-                Console.ReadLine();
-
-
+                Console.WriteLine(response);
             }
         }
     }
