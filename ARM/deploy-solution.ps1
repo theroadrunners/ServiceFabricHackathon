@@ -6,6 +6,7 @@ $location="West Europe"
 $githubUser = "theroadrunners"
 $githubProject = "ServiceFabricHackathon"
 
+$_ignore = & git pull origin master -q
 $_ignore = & git commit -am "." -q
 $branch =  & git rev-parse HEAD
 $repositoryUrl = "https://raw.githubusercontent.com/$($githubUser)/$($githubProject)/$($branch)"
