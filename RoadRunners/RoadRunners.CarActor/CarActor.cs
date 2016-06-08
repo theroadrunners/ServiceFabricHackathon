@@ -7,6 +7,9 @@ using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Actors.Client;
 using RoadRunners.CarActor.Interfaces;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
+using RoadRunners.Models;
 
 namespace RoadRunners.CarActor
 {
@@ -51,11 +54,28 @@ namespace RoadRunners.CarActor
         /// </summary>
         /// <param name="count"></param>
         /// <returns></returns>
-        Task ICarActor.SetStateAsync(CarStates state)
+        Task ICarActor.SetStateAsync(CarScan carscan)
         {
             // Requests are not guaranteed to be processed in order nor at most once.
             // The update function here verifies that the incoming state is greater than the current count to preserve order.
-            return this.StateManager.AddOrUpdateStateAsync("state", state, (key, value) => state > value ? state : value);
+            if(carscan.Action == CarStates.End)
+                StoreEvent(carscan);
+            return this.StateManager.AddOrUpdateStateAsync("state", carscan, (key, value) => carscan.Action > value.Action ? carscan : value);
+
+        }
+
+        private void StoreEvent(CarScan carscan)
+        {
+            var connectionString = "DefaultEndpointsProtocol=https;AccountName=mindparkwebjobs;AccountKey=D6BZdyaZq+kGMxq5H1oAXy9rMElxmcQFMy581uh8lbtDrt3cDEiiOzLoogQu8y6uO2WWixXQbVojURIJKCi3TA==";
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+            CloudTable table = tableClient.GetTableReference("CarScans");
+            table.CreateIfNotExists();
+
+            CarScanStorable carscanStorable = new CarScanStorable(carscan);
+            
+            TableOperation insertOperation = TableOperation.Insert(carscanStorable);
+            table.Execute(insertOperation);
         }
     }
 }

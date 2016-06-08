@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Actors;
+using RoadRunners.Models;
 
 namespace RoadRunners.CarActor.Interfaces
 {
@@ -24,6 +25,6 @@ namespace RoadRunners.CarActor.Interfaces
         /// </summary>
         /// <param name="count"></param>
         /// <returns></returns>
-        Task SetStateAsync(CarStates state);
+        Task SetStateAsync(CarScan carscan);
     }
 }
