@@ -402,8 +402,8 @@
                     {
                         "name": "[concat('vmss-', parameters('commonSettings').tenantName, '-', 'servicefabric')]",
                         "applicationPorts": {
-                            "startPort": "1000",
-                            "endPort": "80"
+                            "startPort": "80",
+                            "endPort": "443"
                         },
                         "clientConnectionEndpointPort": "19000",
                         "httpGatewayEndpointPort": "19080",
