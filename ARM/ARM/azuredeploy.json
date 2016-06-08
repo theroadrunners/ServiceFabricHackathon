@@ -59,7 +59,7 @@
                 "name": "[concat(parameters('tenantName'),'-vnet')]",
                 "address": "10.0.0.0/16",
                 "subnet": {
-                    "webportal": {
+                    "servicefabric": {
                         "name": "subnet-servicefabric",
                         "nsgName": "nsg-servicefabric",
                         "addressRangePrefix": "10.0.0",
@@ -95,7 +95,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(variables('commonSettings').repositoryUrl, 'ARM/shared-resources.json')]",
+                    "uri": "[concat(variables('commonSettings').repositoryUrl, '/ARM/ARM/shared-resources.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
