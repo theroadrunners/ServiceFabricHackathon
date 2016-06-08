@@ -348,35 +348,35 @@
                                 }
                             }
                         ]
+                    },
+                    "extensionProfile": {
+                        "extensions": [
+                            {
+                                "name": "servicefabric-extension",
+                                "properties": {
+                                    "type": "ServiceFabricNode",
+                                    "autoUpgradeMinorVersion": false,
+                                    "protectedSettings": {
+                                        "StorageAccountKey1": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('commonSettings').serviceFabric.loggingStorageName), parameters('commonSettings').constants.apiVersions.storageAccounts).key1]",
+                                        "StorageAccountKey2": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('commonSettings').serviceFabric.loggingStorageName), parameters('commonSettings').constants.apiVersions.storageAccounts).key2]"
+                                    },
+                                    "publisher": "Microsoft.Azure.ServiceFabric",
+                                    "settings": {
+                                        "clusterEndpoint": "[reference(parameters('commonSettings').serviceFabric.clusterName).clusterEndpoint]",
+                                        "nodeTypeRef": "[concat('vmss-', parameters('commonSettings').tenantName, '-', 'servicefabric')]",
+                                        "dataPath": "D:\\\\SvcFab",
+                                        "durabilityLevel": "[parameters('commonSettings').serviceFabric.durabilityLevel]",
+                                        "certificate": {
+                                            "thumbprint": "[parameters('commonSettings').serviceFabric.vault.cert.thumbprint]",
+                                            "x509StoreName": "[parameters('commonSettings').serviceFabric.vault.cert.x509StoreName]"
+                                        }
+                                    },
+                                    "typeHandlerVersion": "1.0"
+                                }
+                            }
+                        ]
                     }
                 }
-            },
-            "extensionProfile": {
-                "extensions": [
-                    {
-                        "name": "servicefabric-extension",
-                        "properties": {
-                            "type": "ServiceFabricNode",
-                            "autoUpgradeMinorVersion": false,
-                            "protectedSettings": {
-                                "StorageAccountKey1": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('commonSettings').serviceFabric.loggingStorageName), parameters('commonSettings').constants.apiVersions.storageAccounts).key1]",
-                                "StorageAccountKey2": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('commonSettings').serviceFabric.loggingStorageName), parameters('commonSettings').constants.apiVersions.storageAccounts).key2]"
-                            },
-                            "publisher": "Microsoft.Azure.ServiceFabric",
-                            "settings": {
-                                "clusterEndpoint": "[reference(parameters('commonSettings').serviceFabric.clusterName).clusterEndpoint]",
-                                "nodeTypeRef": "[concat('vmss-', parameters('commonSettings').tenantName, '-', 'servicefabric')]",
-                                "dataPath": "D:\\\\SvcFab",
-                                "durabilityLevel": "[parameters('commonSettings').serviceFabric.durabilityLevel]",
-                                "certificate": {
-                                    "thumbprint": "[parameters('commonSettings').serviceFabric.vault.cert.thumbprint]",
-                                    "x509StoreName": "[parameters('commonSettings').serviceFabric.vault.cert.x509StoreName]"
-                                }
-                            },
-                            "typeHandlerVersion": "1.0"
-                        }
-                    }
-                ]
             }
         },
         {
