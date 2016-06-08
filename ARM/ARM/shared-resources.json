@@ -1,0 +1,438 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": { "commonSettings": { "type": "object" } },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "[parameters('commonSettings').constants.apiVersions.networkSecurityGroups]",
+            "location": "[resourceGroup().location]",
+            "name": "[parameters('commonSettings').vnet.subnet.jumphost.nsgName]",
+            "tags": { "displayName": "NetworkSecurityGroup RegServer" },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "jumphost-ssh-in",
+                        "properties": {
+                            "priority": 100,
+                            "description": "Allow TCP/22 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.jumphost.address]",
+                            "destinationPortRange": "22"
+                        }
+                    },
+                    {
+                        "name": "block-everything",
+                        "properties": {
+                            "priority": 4096,
+                            "description": "Block all inbound traffic",
+                            "access": "Deny",
+                            "direction": "Inbound",
+                            "protocol": "*",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.jumphost.address]",
+                            "destinationPortRange": "*"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "[parameters('commonSettings').constants.apiVersions.networkSecurityGroups]",
+            "location": "[resourceGroup().location]",
+            "name": "[parameters('commonSettings').vnet.subnet.regserver.nsgName]",
+            "tags": { "displayName": "NetworkSecurityGroup RegServer" },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "regserver-http-in",
+                        "properties": {
+                            "priority": 100,
+                            "description": "Allow TCP/80 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.regserver.address]",
+                            "destinationPortRange": "80"
+                        }
+                    },
+                    {
+                        "name": "regserver-https-in",
+                        "properties": {
+                            "priority": 101,
+                            "description": "Allow TCP/443 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.regserver.address]",
+                            "destinationPortRange": "443"
+                        }
+                    },
+                    {
+                        "name": "regserver-to-database",
+                        "properties": {
+                            "priority": 102,
+                            "description": "Allow TCP/3306 MySQL to Database",
+                            "access": "Allow",
+                            "direction": "Outbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[parameters('commonSettings').vnet.subnet.regserver.address]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.database.address]",
+                            "destinationPortRange": "3306"
+                        }
+                    },
+                    {
+                        "name": "ssh-from-jumphost",
+                        "properties": {
+                            "priority": 200,
+                            "description": "Allow TCP/22 jumphost",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[parameters('commonSettings').vnet.subnet.jumphost.address]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.regserver.address]",
+                            "destinationPortRange": "22"
+                        }
+                    },
+                    {
+                        "name": "block-everything",
+                        "properties": {
+                            "priority": 4096,
+                            "description": "Block all inbound traffic",
+                            "access": "Deny",
+                            "direction": "Inbound",
+                            "protocol": "*",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.regserver.address]",
+                            "destinationPortRange": "*"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "[parameters('commonSettings').constants.apiVersions.networkSecurityGroups]",
+            "location": "[resourceGroup().location]",
+            "name": "[parameters('commonSettings').vnet.subnet.database.nsgName]",
+            "tags": { "displayName": "NetworkSecurityGroup RegServer Database" },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "regserver-to-database",
+                        "properties": {
+                            "priority": 102,
+                            "description": "Allow TCP/3306 MySQL to Database",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[parameters('commonSettings').vnet.subnet.regserver.address]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.database.address]",
+                            "destinationPortRange": "3306"
+                        }
+                    },
+                    {
+                        "name": "hostserver-to-database",
+                        "properties": {
+                            "priority": 103,
+                            "description": "Allow TCP/3306 MySQL to Database",
+                            "access": "Allow",
+                            "direction": "Outbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[parameters('commonSettings').vnet.subnet.hostserver.address]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.database.address]",
+                            "destinationPortRange": "3306"
+                        }
+                    },
+                    {
+                        "name": "webportal-to-database",
+                        "properties": {
+                            "priority": 104,
+                            "description": "Allow TCP/3306 MySQL to Database",
+                            "access": "Allow",
+                            "direction": "Outbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[parameters('commonSettings').vnet.subnet.webportal.address]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.database.address]",
+                            "destinationPortRange": "3306"
+                        }
+                    },
+                    {
+                        "name": "ssh-from-jumphost",
+                        "properties": {
+                            "priority": 200,
+                            "description": "Allow TCP/22 jumphost",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[parameters('commonSettings').vnet.subnet.jumphost.address]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.database.address]",
+                            "destinationPortRange": "22"
+                        }
+                    },
+                    {
+                        "name": "block-everything",
+                        "properties": {
+                            "priority": 4096,
+                            "description": "Block all inbound traffic",
+                            "access": "Deny",
+                            "direction": "Inbound",
+                            "protocol": "*",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.database.address]",
+                            "destinationPortRange": "*"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "[parameters('commonSettings').constants.apiVersions.networkSecurityGroups]",
+            "location": "[resourceGroup().location]",
+            "name": "[parameters('commonSettings').vnet.subnet.hostserver.nsgName]",
+            "tags": { "displayName": "NetworkSecurityGroup HostServer" },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "hostserver-to-database",
+                        "properties": {
+                            "priority": 102,
+                            "description": "Allow TCP/3306 MySQL to Database",
+                            "access": "Allow",
+                            "direction": "Outbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[parameters('commonSettings').vnet.subnet.hostserver.address]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.database.address]",
+                            "destinationPortRange": "3306"
+                        }
+                    },
+                    {
+                        "name": "hostserver-http-in",
+                        "properties": {
+                            "priority": 103,
+                            "description": "Allow TCP/80 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.hostserver.address]",
+                            "destinationPortRange": "80"
+                        }
+                    },
+                    {
+                        "name": "hostserver-https-in",
+                        "properties": {
+                            "priority": 104,
+                            "description": "Allow TCP/443 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.hostserver.address]",
+                            "destinationPortRange": "443"
+                        }
+                    },
+                    {
+                        "name": "ssh-from-jumphost",
+                        "properties": {
+                            "priority": 200,
+                            "description": "Allow TCP/22 jumphost",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[parameters('commonSettings').vnet.subnet.jumphost.address]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.hostserver.address]",
+                            "destinationPortRange": "22"
+                        }
+                    },
+                    {
+                        "name": "block-everything",
+                        "properties": {
+                            "priority": 4096,
+                            "description": "Block all inbound traffic",
+                            "access": "Deny",
+                            "direction": "Inbound",
+                            "protocol": "*",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.hostserver.address]",
+                            "destinationPortRange": "*"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "[parameters('commonSettings').constants.apiVersions.networkSecurityGroups]",
+            "location": "[resourceGroup().location]",
+            "name": "[parameters('commonSettings').vnet.subnet.webportal.nsgName]",
+            "tags": { "displayName": "NetworkSecurityGroup PortalServer" },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "webportal-to-database",
+                        "properties": {
+                            "priority": 102,
+                            "description": "Allow TCP/3306 MySQL to Database",
+                            "access": "Allow",
+                            "direction": "Outbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[parameters('commonSettings').vnet.subnet.webportal.address]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.database.address]",
+                            "destinationPortRange": "3306"
+                        }
+                    },
+                    {
+                        "name": "hostserver-http-in",
+                        "properties": {
+                            "priority": 103,
+                            "description": "Allow TCP/80 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.webportal.address]",
+                            "destinationPortRange": "80"
+                        }
+                    },
+                    {
+                        "name": "hostserver-https-in",
+                        "properties": {
+                            "priority": 104,
+                            "description": "Allow TCP/443 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.webportal.address]",
+                            "destinationPortRange": "443"
+                        }
+                    },
+                    {
+                        "name": "ssh-from-jumphost",
+                        "properties": {
+                            "priority": 200,
+                            "description": "Allow TCP/22 jumphost",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[parameters('commonSettings').vnet.subnet.jumphost.address]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.webportal.address]",
+                            "destinationPortRange": "22"
+                        }
+                    },
+                    {
+                        "name": "block-everything",
+                        "properties": {
+                            "priority": 4096,
+                            "description": "Block all inbound traffic",
+                            "access": "Deny",
+                            "direction": "Inbound",
+                            "protocol": "*",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[parameters('commonSettings').vnet.subnet.webportal.address]",
+                            "destinationPortRange": "*"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "[parameters('commonSettings').constants.apiVersions.virtualNetworks]",
+            "location": "[resourceGroup().location]",
+            "name": "[parameters('commonSettings').vnet.name]",
+            "tags": { "displayName": "Virtual Network" },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('commonSettings').vnet.subnet.jumphost.nsgName)]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('commonSettings').vnet.subnet.regserver.nsgName)]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('commonSettings').vnet.subnet.database.nsgName)]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('commonSettings').vnet.subnet.hostserver.nsgName)]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('commonSettings').vnet.subnet.webportal.nsgName)]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('commonSettings').vnet.address]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('commonSettings').vnet.subnet.jumphost.name]",
+                        "properties": {
+                            "addressPrefix": "[parameters('commonSettings').vnet.subnet.jumphost.address]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('commonSettings').vnet.subnet.jumphost.nsgName)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[parameters('commonSettings').vnet.subnet.regserver.name]",
+                        "properties": {
+                            "addressPrefix": "[parameters('commonSettings').vnet.subnet.regserver.address]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('commonSettings').vnet.subnet.regserver.nsgName)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[parameters('commonSettings').vnet.subnet.database.name]",
+                        "properties": {
+                            "addressPrefix": "[parameters('commonSettings').vnet.subnet.database.address]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('commonSettings').vnet.subnet.database.nsgName)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[parameters('commonSettings').vnet.subnet.hostserver.name]",
+                        "properties": {
+                            "addressPrefix": "[parameters('commonSettings').vnet.subnet.hostserver.address]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('commonSettings').vnet.subnet.hostserver.nsgName)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[parameters('commonSettings').vnet.subnet.webportal.name]",
+                        "properties": {
+                            "addressPrefix": "[parameters('commonSettings').vnet.subnet.webportal.address]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('commonSettings').vnet.subnet.webportal.nsgName)]"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,158 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "tenantName": {
+            "type": "string",
+            "defaultValue": "nrw"
+        },
+        "repositoryUrl": {
+            "type": "string",
+            "defaultValue": "https://raw.githubusercontent.com/theroadrunners/ServiceFabricHackathon/master/"
+        },
+        "serviceFabricClusterSize": {
+            "type": "int",
+            "defaultValue": 5
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        }
+    },
+    "variables": {
+        "apiVersions": {
+            "storageAccounts": "2015-06-15",
+            "networkSecurityGroups": "2015-06-15",
+            "loadBalancers": "2016-03-30",
+            "virtualNetworks": "2015-06-15",
+            "publicIPAddresses": "2015-06-15",
+            "networkInterfaces": "2015-06-15",
+            "virtualMachines": "2015-06-15",
+            "virtualMachineScaleSets": "2015-06-15",
+            "deployments": "2015-01-01"
+        },
+        "commonSettings": {
+            "constants": {
+                "apiVersions": {
+                    "storageAccounts": "2015-06-15",
+                    "networkSecurityGroups": "2015-06-15",
+                    "loadBalancers": "2016-03-30",
+                    "virtualNetworks": "2015-06-15",
+                    "publicIPAddresses": "2015-06-15",
+                    "networkInterfaces": "2015-06-15",
+                    "virtualMachines": "2015-06-15",
+                    "virtualMachineScaleSets": "2015-06-15",
+                    "deployments": "2015-01-01"
+                }
+            },
+            "environment": {
+                "blobEndpoint": "blob.core.windows.net"
+            },
+            "tenantName": "[parameters('tenantName')]",
+            "repositoryUrl": "[parameters('repositoryUrl')]",
+            "longtermResourceGroupName": "[parameters('longtermResourceGroupName')]",
+            "hostServerInstanceCount": "[parameters('hostServerInstanceCount')]",
+            "deployRegServer": "[parameters('deployRegServer')]",
+            "regServerInstanceCount": "[parameters('regServerInstanceCount')]",
+            "deployPortalServer": "[parameters('deployPortalServer')]",
+            "portalServerInstanceCount": "[parameters('portalServerInstanceCount')]",
+            "databaseNodeInstanceCount": "[parameters('databaseNodeInstanceCount')]",
+            "adminUsername": "[parameters('adminUsername')]",
+            "vnet": {
+                "name": "[concat(parameters('tenantName'),'-vnet')]",
+                "address": "10.0.0.0/16",
+                "subnet": {
+                    "jumphost": {
+                        "name": "[concat('subnet-', variables('tierName').jumphost)]",
+                        "nsgName": "[concat('nsg-', variables('tierName').jumphost)]",
+                        "addressRangePrefix": "10.0.0",
+                        "address": "10.0.0.0/24"
+                    },
+                    "regserver": {
+                        "name": "[concat('subnet-', variables('tierName').regserver)]",
+                        "nsgName": "[concat('nsg-', variables('tierName').regserver)]",
+                        "addressRangePrefix": "10.0.1",
+                        "address": "10.0.1.0/24"
+                    },
+                    "hostserver": {
+                        "name": "[concat('subnet-', variables('tierName').hostserver)]",
+                        "nsgName": "[concat('nsg-', variables('tierName').hostserver)]",
+                        "addressRangePrefix": "10.0.2",
+                        "address": "10.0.2.0/24"
+                    },
+                    "webportal": {
+                        "name": "[concat('subnet-', variables('tierName').webportal)]",
+                        "nsgName": "[concat('nsg-', variables('tierName').webportal)]",
+                        "addressRangePrefix": "10.0.3",
+                        "address": "10.0.3.0/24"
+                    },
+                    "database": {
+                        "name": "[concat('subnet-', variables('tierName').database)]",
+                        "nsgName": "[concat('nsg-', variables('tierName').database)]",
+                        "addressRangePrefix": "10.0.4",
+                        "address": "10.0.4.0/24"
+                    }
+                }
+            },
+            "vm": {
+                "vmStorageAccountContainerName": "vhds",
+                "images": {
+                    "standard": {
+                        "publisher": "OpenLogic",
+                        "offer": "CentOS",
+                        "sku": "7.2",
+                        "version": "latest"
+                    }
+                },
+                "size": {
+                    "regserver": "Standard_A1",
+                    "database": "Standard_A1",
+                    "hostserver": "Standard_A1",
+                    "webportal": "Standard_A1",
+                    "jumphost": "Standard_A0"
+                }
+            }
+        }
+    },
+    "resources": [
+        {
+            "name": "shared-resources",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('commonSettings').constants.apiVersions.deployments]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('commonSettings').repositoryUrl, 'ARM/shared-resources.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "commonSettings": {
+                        "value": "[variables('commonSettings')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "service-fabric-cluster",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('commonSettings').constants.apiVersions.deployments]",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/deployments/', 'shared-resources')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('commonSettings').repositoryUrl, 'ARM/service-fabric-cluster.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "commonSettings": {
+                        "value": "[variables('commonSettings')]"
+                    }
+                }
+            }
+        }
+    ]
+}

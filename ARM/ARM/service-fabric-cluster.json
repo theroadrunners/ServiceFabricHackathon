@@ -1,0 +1,391 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+     "parameters": { "commonSettings": { "type": "object" } },
+     "variables": {
+        "constants": {
+            "apiVersions": {
+                "storageAccounts": "2015-06-15",
+                "networkSecurityGroups": "2015-06-15",
+                "loadBalancers": "2016-03-30",
+                "virtualNetworks": "2015-06-15",
+                "publicIPAddresses": "2015-06-15",
+                "networkInterfaces": "2015-06-15",
+                "virtualMachines": "2015-06-15",
+                "virtualMachineScaleSets": "2015-06-15"
+            },
+            "publicIPs": {
+                "regserver": "regserver",
+                "hostserver": "hostserver",
+                "webportal": "webportal"
+            }
+        },
+        "ipAddressId": {
+            "regserver": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('longtermResourceGroupName'), '/providers/Microsoft.Network/publicIPAddresses/', concat(parameters('tenantName'), '-', variables('publicIPs').regserver))]",
+            "hostserver": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('longtermResourceGroupName'), '/providers/Microsoft.Network/publicIPAddresses/', concat(parameters('tenantName'), '-', variables('publicIPs').hostserver))]",
+            "webportal": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('longtermResourceGroupName'), '/providers/Microsoft.Network/publicIPAddresses/', concat(parameters('tenantName'), '-', variables('publicIPs').webportal))]"
+        },
+        "repositoryUrl": "https://raw.githubusercontent.com/chgeuer/td/master/",
+        "newStorageAccountSuffix": "[concat(parameters('tenantName'), 'vmss')]",
+        "storageAccountPrefix": [ "a", "g", "m", "s", "y" ],
+        "storageAccountNameSuffix": "[toLower(replace(parameters('tenantName'),'-',''))]",
+        "addressrange": {
+            "global": "10.0.0.0/16",
+            "regserver": "10.0.0.0/24",
+            "database": "10.0.0.1/24",
+            "hostserver": "10.0.0.2/24",
+            "webportal": "10.0.0.3/24"
+        },
+        "vnet": {
+            "name": "[concat(parameters('tenantName'),'-vnet')]",
+            "address": "[variables('addressrange').global]",
+            "subnet": {
+                "regserver": {
+                    "name": "[concat(parameters('tenantName'), '-subnet-', 'regserver')]",
+                    "address": "[variables('addressrange').regserver]"
+                },
+                "database": {
+                    "name": "[concat(parameters('tenantName'), '-subnet-', 'database')]",
+                    "address": "[variables('addressrange').database]"
+                },
+                "hostserver": {
+                    "name": "[concat(parameters('tenantName'), '-subnet-', 'hostserver')]",
+                    "address": "[variables('addressrange').hostserver]"
+                },
+                "webportal": {
+                    "name": "[concat(parameters('tenantName'), '-subnet-', 'webportal')]",
+                    "address": "[variables('addressrange').webportal]"
+                }
+            }
+        },
+        "vm": {
+            "vmStorageAccountContainerName": "vhds",
+            "images": {
+                "standard": {
+                    "publisher": "OpenLogic",
+                    "offer": "CentOS",
+                    "sku": "7.2",
+                    "version": "latest"
+                }
+            },
+            "size": {
+                "regserver": "Standard_A1",
+                "database": "Standard_A1",
+                "hostserver": "Standard_A1",
+                "webportal": "Standard_A1"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "[variables('constants').apiVersions.networkSecurityGroups]",
+            "location": "[resourceGroup().location]",
+            "name": "networkSecurityGroup",
+            "tags": { "displayName": "NetworkSecurityGroup" },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "regserver-http-in",
+                        "properties": {
+                            "priority": 100,
+                            "description": "Allow TCP/80 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[variables('addressrange').regserver]",
+                            "destinationPortRange": "80"
+                        }
+                    },
+                    {
+                        "name": "regserver-https-in",
+                        "properties": {
+                            "priority": 101,
+                            "description": "Allow TCP/443 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[variables('addressrange').regserver]",
+                            "destinationPortRange": "443"
+                        }
+                    },
+                    {
+                        "name": "regserver-to-database",
+                        "properties": {
+                            "priority": 102,
+                            "description": "Allow TCP/3306 MySQL to Database",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "[variables('addressrange').regserver]",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[variables('addressrange').database]",
+                            "destinationPortRange": "3306"
+                        }
+                    },
+                    {
+                        "name": "hostserver-http-in",
+                        "properties": {
+                            "priority": 103,
+                            "description": "Allow TCP/80 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[variables('addressrange').hostserver]",
+                            "destinationPortRange": "80"
+                        }
+                    },
+                    {
+                        "name": "hostserver-https-in",
+                        "properties": {
+                            "priority": 104,
+                            "description": "Allow TCP/443 Inbound",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "Internet",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[variables('addressrange').hostserver]",
+                            "destinationPortRange": "443"
+                        }
+                    },
+                    {
+                        "name": "block-everything",
+                        "properties": {
+                            "priority": 4096,
+                            "description": "Block all inbound traffic",
+                            "access": "Deny",
+                            "direction": "Inbound",
+                            "protocol": "*",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "[variables('addressrange').regserver]",
+                            "destinationPortRange": "*"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "[variables('constants').apiVersions.virtualNetworks]",
+            "location": "[resourceGroup().location]",
+            "name": "[variables('vnet').name]",
+            "tags": { "displayName": "Virtual Network" },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkSecurityGroups/', 'networkSecurityGroup')]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressrange').global]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vnet').subnet.web.name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet').subnet.web.address]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroupwebs')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "[variables('constants').apiVersions.networkInterfaces]",
+            "location": "[resourceGroup().location]",
+            "name": "[concat('nic-', variables('suffix').jumphost)]",
+            "tags": { "displayName": "Jump Host - Network Interface Card" },
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnet').name)]",
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPs').jumphost)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('addressrange').machineIPs.jumphost]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPs').jumphost)]"
+                            },
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks',variables('vnet').name), '/subnets/', variables('vnet').subnet.web.name)]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "[variables('constants').apiVersions.storageAccounts]",
+            "location": "[resourceGroup().location]",
+            "name": "[concat(variables('storageAccountPrefix')[copyIndex()], variables('newStorageAccountSuffix'))]",
+            "tags": { "displayName": "Storage Accounts - VM ScaleSet" },
+            "copy": {
+                "name": "vmssstorageLoop",
+                "count": "[length(variables('storageAccountPrefix'))]"
+            },
+            "properties": {
+                "accountType": "Standard_LRS"
+            }
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "myLoadbalancerName",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "[variables('constants').apiVersions.loadBalancers]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnet').name)]",
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPs').web)]"
+            ],
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "myLoadBalancerFrontEnd",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPs').web)]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "myBackendAddressPool"
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "probe-http",
+                        "properties": {
+                            "protocol": "Http",
+                            "port": 80,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2,
+                            "requestPath": "/"
+                        }
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "nlb-rule-http",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "frontendPort": 80,
+                            "backendPort": 80,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": { "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'myLoadbalancerName'), '/probes/', 'probe-http')]" },
+                            "frontendIPConfiguration": { "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'myLoadbalancerName'), '/frontendIPConfigurations/', 'myLoadBalancerFrontEnd')]" },
+                            "backendAddressPool": { "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'myLoadbalancerName'), '/backendAddressPools/', 'myBackendAddressPool')]" }
+                        }
+                    }
+
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "apiVersion": "[variables('constants').apiVersions.virtualMachineScaleSets]",
+            "location": "[resourceGroup().location]",
+            "name": "[concat(parameters('tenantName'),'-webs')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefix')[0], variables('newStorageAccountSuffix'))]",
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefix')[1], variables('newStorageAccountSuffix'))]",
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefix')[2], variables('newStorageAccountSuffix'))]",
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefix')[3], variables('newStorageAccountSuffix'))]",
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefix')[4], variables('newStorageAccountSuffix'))]",
+                "[concat('Microsoft.Network/loadBalancers/', 'myLoadbalancerName')]"
+            ],
+            "sku": {
+                "name": "[variables('vm').web.size]",
+                "tier": "Standard",
+                "capacity": "[parameters('regServerInstanceCount')]"
+            },
+            "tags": { "displayName": "Virtual Machine ScaleSet" },
+            "properties": {
+                "upgradePolicy": {
+                    "mode": "Automatic"
+                },
+                "virtualMachineProfile": {
+                    "storageProfile": {
+                        "osDisk": {
+                            "name": "VMSSOsDisk",
+                            "caching": "ReadWrite",
+                            "createOption": "FromImage",
+                            "vhdContainers": [
+                                "[concat('https://',variables('storageAccountPrefix')[0],variables('newStorageAccountSuffix'),'.blob.core.windows.net/vmss')]",
+                                "[concat('https://',variables('storageAccountPrefix')[1],variables('newStorageAccountSuffix'),'.blob.core.windows.net/vmss')]",
+                                "[concat('https://',variables('storageAccountPrefix')[2],variables('newStorageAccountSuffix'),'.blob.core.windows.net/vmss')]",
+                                "[concat('https://',variables('storageAccountPrefix')[3],variables('newStorageAccountSuffix'),'.blob.core.windows.net/vmss')]",
+                                "[concat('https://',variables('storageAccountPrefix')[4],variables('newStorageAccountSuffix'),'.blob.core.windows.net/vmss')]"
+                            ]
+                        },
+                        "imageReference": {
+                            "publisher": "[variables('vm').images.standard.publisher]",
+                            "offer": "[variables('vm').images.standard.offer]",
+                            "sku": "[variables('vm').images.standard.sku]",
+                            "version": "[variables('vm').images.standard.version]"
+                        }
+                    },
+                    "osProfile": {
+                        "computerNamePrefix": "[concat('vm',parameters('tenantName'))]",
+                        "adminUsername": "[parameters('adminUsername')]",
+                        "adminPassword": "[parameters('adminPassword')]"
+                    },
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "vmssnic",
+                                "properties": {
+                                    "primary": true,
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "myVirtualMachineScaleSetIpConfiguration",
+                                            "properties": {
+                                                "subnet": { "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vnet').name), '/subnets/', variables('vnet').subnet.web.name)]" },
+                                                "loadBalancerBackendAddressPools": [ { "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'myLoadbalancerName'), '/backendAddressPools/', 'myBackendAddressPool')]" } ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "extensionProfile": {
+                        "extensions": [
+                            {
+                                "name": "CustomScriptExtensionVMSS",
+                                "properties": {
+                                    "publisher": "Microsoft.OSTCExtensions",
+                                    "type": "CustomScriptForLinux",
+                                    "typeHandlerVersion": "1.4",
+                                    "autoUpgradeMinorVersion": false,
+                                    "settings": {
+                                        "fileUris": [
+                                            "[concat(variables('repositoryUrl') ,'ARM/scripts/install-db.sh')]"
+                                        ],
+                                        "commandToExecute": "[concat('bash install-db.sh ', variables('publicIPs').domainNames.www)]"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
