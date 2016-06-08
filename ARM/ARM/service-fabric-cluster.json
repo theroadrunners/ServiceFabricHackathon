@@ -384,10 +384,6 @@
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('commonSettings').serviceFabric.loggingStorageName)]"
             ],
             "properties": {
-                "certificate": {
-                    "thumbprint": "[parameters('commonSettings').serviceFabric.vault.cert.thumbprint]",
-                    "x509StoreName": "[parameters('commonSettings').serviceFabric.vault.cert.x509StoreName]"
-                },
                 "clientCertificateCommonNames": [ ],
                 "clientCertificateThumbprints": [ ],
                 "clusterState": "Default",
