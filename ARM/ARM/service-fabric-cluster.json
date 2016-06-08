@@ -12,6 +12,13 @@
     },
     "resources": [
         {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "[parameters('commonSettings').constants.apiVersions.storageAccounts]",
+            "name": "[parameters('commonSettings').resultStorage]",
+            "location": "[resourceGroup().location]",
+            "properties": { "accountType": "Standard_GRS" }
+        },
+        {
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "[parameters('commonSettings').constants.apiVersions.networkSecurityGroups]",
             "location": "[resourceGroup().location]",

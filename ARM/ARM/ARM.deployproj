@@ -30,7 +30,6 @@
     </None>
     <Content Include="service-fabric-cluster.json" />
     <Content Include="azuredeploy.json" />
-    <None Include="json.json" />
     <None Include="metadata.json" />
     <None Include="servicefabricfromquickstart.json" />
   </ItemGroup>
