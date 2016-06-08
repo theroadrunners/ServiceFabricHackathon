@@ -1,4 +1,4 @@
-$tenantName = "roadrunner2"
+$tenantName = "roadrunner3"
 $location="West Europe"
 
 $githubUser = "theroadrunners"
