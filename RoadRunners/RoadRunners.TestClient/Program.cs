@@ -22,12 +22,25 @@ namespace RoadRunners.TestClient
 
         private static void DoAction(CarStates state, string scanner)
         {
-            CarScan cs = new CarScan()
+            CarScan cs;
+            if (state == CarStates.Start)
             {
-                Action = state,
-                StartScannerId = scanner,
-                LicensePlate = "1-ABC-AA"
-            };
+                cs = new CarScan()
+                {
+                    Action = state,
+                    StartScannerId = scanner,
+                    LicensePlate = "1-ABC-AA"
+                };
+            }
+            else
+            {
+                cs = new CarScan()
+                {
+                    Action = state,
+                    EndScannerId = scanner,
+                    LicensePlate = "1-ABC-AA"
+                };
+            }
 
             using (var client = new HttpClient())
             {

@@ -15,19 +15,17 @@
     {
         public CarScanStorable(CarScan carScan)
         {
-            this.PartitionKey = DateTime.Today.Date.ToShortDateString();
-            this.RowKey = $"{DateTime.Today.Date.ToShortDateString()}&{carScan.LicensePlate}";
+            this.PartitionKey = "A";
+            this.RowKey = $"{carScan.LicensePlate}";
             this.LicensePlate = carScan.LicensePlate;
             this.StartScannerId = carScan.StartScannerId;
             this.EndScannerId = carScan.EndScannerId;
             this.StartTime = carScan.StartTime;
             this.EndTime = carScan.EndTime;
-            this.Action = carScan.Action;
+            this.Action = (int)carScan.Action;
+            this.Speed = carScan.Speed;
         }
 
-        /// <summary>
-        /// Licenseplate of the car
-        /// </summary>
         public string LicensePlate { get; set; }
 
         /// <summary>
@@ -50,6 +48,6 @@
         /// <summary>
         /// Can be Start of End
         /// </summary>
-        public CarStates Action { get; set; }
+        public int Action { get; set; }
     }
 }

@@ -49,7 +49,21 @@ namespace RoadRunners.CarActor
             return this.StateManager.GetStateAsync<CarStates>("state");
         }
 
+        static Task<double> GetDistanceAsync(string startScannerId, string endScannerId)
+        {
+            return Task.FromResult(4.0); // cheating...
+        }
 
+        static async Task<double> ComputeSpeedAsync(CarScan carScan)
+        {
+            var distanceInKm = await GetDistanceAsync(carScan.StartScannerId, carScan.EndScannerId);
+
+            var durationInHours = carScan.EndTime.Subtract(carScan.StartTime).TotalHours;
+
+            var speed = distanceInKm / durationInHours;
+
+            return speed;
+        }
 
         /// <summary>
         /// TODO: Replace with your own actor method.
@@ -74,19 +88,19 @@ namespace RoadRunners.CarActor
                     case CarStates.End:
                         cs.EndScannerId = carscan.EndScannerId;
                         cs.EndTime = carscan.EndTime;
-                        cs.Speed = 0.0;
+                        cs.Speed = await ComputeSpeedAsync(cs);
                         break;
 
                 }
                 // Requests are not guaranteed to be processed in order nor at most once.
                 // The update function here verifies that the incoming state is greater than the current count to preserve order.
                 if (carscan.Action == CarStates.End)
-                    StoreEvent(carscan);
+                    StoreEvent(cs);
                 await this.StateManager.AddOrUpdateStateAsync("state", cs, (key, value) => cs.Action > value.Action ? cs : value);
             }
             catch(Exception ex)
             {
-
+                throw;
             }
         }
 
