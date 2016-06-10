@@ -13,7 +13,7 @@
     {
         static void Main(string[] args)
         {
-            var tasks = Enumerable.Range(start: 1, count: 10000)
+            var tasks = Enumerable.Range(start: 1, count: 2)
                 .Select(i => new CarSimulator(SenderClient.SendAsync))
                 .Select(cs => cs.RunAsync())
                 .ToArray();
@@ -36,7 +36,7 @@
 
         static TimeSpan GetSmallDelay(int seconds)
         {
-            return TimeSpan.FromSeconds(_r.Next(seconds));
+            return TimeSpan.FromSeconds(4 + _r.Next(minValue: 1, maxValue: 4 + seconds));
         }
 
         public string LicensePlate { get; } = GetRandomLicensePlate();
@@ -53,7 +53,7 @@
         public async Task RunAsync()
         {
             await Task.Delay(this.InitialDelay);
-            await SendEvent(new CarScan()
+            await SendEvent(new CarScan
             {
                 Action = CarStates.Start,
                 StartScannerId = "A",
@@ -61,7 +61,7 @@
             });
 
             await Task.Delay(this.WithinSectionDelay);
-            await SendEvent(new CarScan()
+            await SendEvent(new CarScan
             {
                 Action = CarStates.End,
                 StartScannerId = "B",
@@ -72,26 +72,28 @@
 
     class SenderClient
     {
-        public async static Task SendAsync(CarScan cs)
-        {
-            using (var client = new HttpClient {
-                BaseAddress = new Uri("http://localhost:8664/")
-            })
+        static readonly HttpClient client = ((Func<HttpClient>) (() => {
+            var client = new HttpClient
             {
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                BaseAddress = new Uri("http://localhost:8664/")
+            };
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            return client;
+        }))();
 
+        public async static Task<string> SendAsync(CarScan carScan)
+        {
+            var result = await client.PostAsync(
+                requestUri: "/api/Scanner",
+                content: new StringContent(
+                    content: JsonConvert.SerializeObject(carScan),
+                    encoding: Encoding.UTF8,
+                    mediaType: "application/json"));
+            var response = await result.Content.ReadAsStringAsync();
 
-                var carContent = JsonConvert.SerializeObject(cs);
-                HttpContent content = new StringContent(
-                        content: JsonConvert.SerializeObject(carContent),
-                        encoding: Encoding.UTF8,
-                        mediaType: "application/json");
+            Console.WriteLine(response);
 
-                var result = await client.PostAsync("/api/Scanner", content);
-                var response = await result.Content.ReadAsStringAsync();
-
-                Console.WriteLine(response);
-            }
+            return response;
         }
     }
 }

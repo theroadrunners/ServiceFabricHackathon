@@ -1,79 +1,15 @@
-﻿
-namespace RoadRunners.Models
+﻿namespace RoadRunners.Models
 {
     using System;
 
-
-    [Serializable]
     public class CarScan
     {
-        private string _licensePlate;
-
-        /// <summary>
-        /// Licenseplate of the car
-        /// </summary>
-        public string LicensePlate
-        {
-            get { return _licensePlate; }
-            set { _licensePlate = value; }
-        }
-
-        private String _startScannerId;
-
-        /// <summary>
-        /// The device that scans cars on the road
-        /// </summary>
-        public string StartScannerId
-        {
-            get { return _startScannerId; }
-            set { _startScannerId = value; }
-        }
-
-        private String _endScannerId;
-
-        /// <summary>
-        /// The device that scans cars on the road
-        /// </summary>
-        public string EndScannerId
-        {
-            get { return _endScannerId; }
-            set { _endScannerId = value; }
-        }
-
-        private DateTime _startTime;
-
-        public DateTime StartTime
-        {
-            get { return _startTime; }
-            set { _startTime = value; }
-        }
-
-        private DateTime _endTime;
-
-        public DateTime EndTime
-        {
-            get { return _endTime; }
-            set { _endTime = value; }
-        }
-
-        private double _speed = 0;
-
-        public double Speed
-        {
-            get { return _speed; }
-            set { _speed = value; }
-        }
-
-        private CarStates _action;
-
-        /// <summary>
-        /// Can be Start of End
-        /// </summary>
-        public CarStates Action
-        {
-            get { return _action; }
-            set { _action = value; }
-        }
-
+        public string LicensePlate { get; set; }
+        public string StartScannerId { get; set; }
+        public string EndScannerId { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public double Speed { get; set; }
+        public CarStates Action { get; set; }
     }
 }
